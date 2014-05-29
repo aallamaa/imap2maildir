@@ -562,19 +562,23 @@ def main():
                        port=options.port, ssl=options.ssl)
         imap = imapserver.Get()
 
-        # Instantiate a folder
-        folder = imap.Folder(folder=options.remotefolder)
-        folder.__keepaliver__(imapserver.Keepalive)
+        folderlist = imap.list()
 
-        result = copy_messages_by_folder(folder=folder,
-                                         db=db,
-                                         imap=imap,
-                                         mbox=mbox,
-                                         limit=options.maxmessages,
-                                         turbo=options.turbo,
-                                         mboxdash=options.mboxdash,
-                                         search=options.search,
-                                         seencache=seencache)
+        for l in folderlist[1]:
+            if l.startswith('(\\HasNoChildren)'):
+                remotefolder=l.split('"')[-2]# Instantiate a folder
+                folder = imap.Folder(folder=remotefolder)
+                folder.__keepaliver__(imapserver.Keepalive)
+
+                result = copy_messages_by_folder(folder=folder,
+                                                 db=db,
+                                                 imap=imap,
+                                                 mbox=mbox,
+                                                 limit=options.maxmessages,
+                                                 turbo=options.turbo,
+                                                 mboxdash=options.mboxdash,
+                                                 search=options.search,
+                                                 seencache=seencache)
     except (KeyboardInterrupt, SystemExit):
         log.warning('Caught interrupt; clearing locks and safing database.')
         mbox.unlock()
