@@ -53,7 +53,7 @@ defaults = {
             'hostname': 'imap.gmail.com',
             'ssl': True,
             'port': False,
-            'remotefolder': '[Gmail]/All Mail',
+            'remotefolder': '',
             'create': False,
             'maxmessages': 0,
             'configfile': 'imap2maildir.conf',
@@ -567,18 +567,19 @@ def main():
         for l in folderlist[1]:
             if l.startswith('(\\HasNoChildren)'):
                 remotefolder=l.split('"')[-2]# Instantiate a folder
-                folder = imap.Folder(folder=remotefolder)
-                folder.__keepaliver__(imapserver.Keepalive)
-
-                result = copy_messages_by_folder(folder=folder,
-                                                 db=db,
-                                                 imap=imap,
-                                                 mbox=mbox,
-                                                 limit=options.maxmessages,
-                                                 turbo=options.turbo,
-                                                 mboxdash=options.mboxdash,
-                                                 search=options.search,
-                                                 seencache=seencache)
+                print "Found",remotefolder
+        folder = imap.Folder(folder=options.remotefolder)
+        folder.__keepaliver__(imapserver.Keepalive)
+        
+        result = copy_messages_by_folder(folder=folder,
+                                         db=db,
+                                         imap=imap,
+                                         mbox=mbox,
+                                         limit=options.maxmessages,
+                                         turbo=options.turbo,
+                                         mboxdash=options.mboxdash,
+                                         search=options.search,
+                                         seencache=seencache)
     except (KeyboardInterrupt, SystemExit):
         log.warning('Caught interrupt; clearing locks and safing database.')
         mbox.unlock()
